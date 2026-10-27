@@ -219,11 +219,32 @@ section h2{font:800 clamp(2.4rem,7vw,4.5rem)/1 var(--display);letter-spacing:-.0
 </section>
 
 <script>
-document.getElementById('contact-form').addEventListener('submit',function(e){
+document.getElementById('contact-form').addEventListener('submit', async function (e) {
   e.preventDefault();
-  var fields=new FormData(this);
-  var body=['E-pasts: '+fields.get('email'),'Ziņa: '+fields.get('message')].join('\n');
-  window.location.href='mailto:maikls.drobins@gmail.com?subject='+encodeURIComponent('Ziņa no Sub Scriptum mājaslapas')+'&body='+encodeURIComponent(body);
+  var form = this;
+  var button = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (button) button.disabled = true;
+
+  var fields = new FormData(form);
+  try {
+    var response = await fetch('https://formsubmit.co/ajax/maikls.drobins@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: 'Ziņa no Sub Scriptum mājaslapas',
+        _replyto: fields.get('email'),
+        E_pasts: fields.get('email'),
+        Ziņa: fields.get('message')
+      })
+    });
+    if (!response.ok) throw new Error('Request failed');
+    form.reset();
+    alert('Paldies! Ziņa nosūtīta.');
+  } catch (err) {
+    alert('Neizdevās nosūtīt ziņu. Lūdzu, mēģiniet vēlreiz.');
+  } finally {
+    if (button) button.disabled = false;
+  }
 });
 </script>
 </body>
